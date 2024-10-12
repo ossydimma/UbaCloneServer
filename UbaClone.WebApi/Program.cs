@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 using UbaClone.WebApi.Data;
 using UbaClone.WebApi.Repositories;
 
@@ -34,12 +37,6 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 });
 
-//builder.Services.AddStackExchangeRedisCache(redisOptions =>
-//{
-//    string? connection = builder.Configuration
-//    .GetConnectionString("Redis");
-//    redisOptions.Configuration = connection;
-//});
 // Load Redis settings from appsettings.json
 var redisSettings = builder.Configuration.GetSection("RedisCacheSettings");
 var redisHost = redisSettings.GetValue<string>("Host");
@@ -67,16 +64,36 @@ builder.Services.AddCors(options =>
     });
 });
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowAll",
-//        builder =>
-//        {
-//            builder.AllowAnyOrigin()
-//                   .AllowAnyMethod()
-//                   .AllowAnyHeader();
-//        });
-//});
+// Configuring Jwt
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Secret"]!);
+
+// Add Authentication
+// Add Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = true; // Always ensure HTTPS
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ClockSkew = TimeSpan.Zero // No clock skew, tokens expire exactly when they should
+    };
+});
+
+// Add Service to container
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -95,6 +112,8 @@ app.MapControllers();
 //app.UseCors("AllowAll");
 app.UseCors();
 
+// using  authentication and Authorization middleware
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.Run();

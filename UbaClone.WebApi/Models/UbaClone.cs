@@ -3,12 +3,15 @@
     public class UbaClone
     {
         public int Id { get; set; }
-        public required string FullName { get; set; }
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = null!;
-        public required string Password { get; set; }
-        public required int Pin { get; set; }
+        public string FullName { get; set; } = null!;
+        public byte[] PasswordHash { get; set; } = null!;
+        public byte[] PasswordSalt { get; set; } = null!;
+        public byte[] PinHash { get; set; } = null!;
+        public byte[] PinSalt { get; set; } = null!;
+        public string Contact { get; set; } = string.Empty;
         public int AccountNumber { get; set; }
-        public int Balance { get; set; }
+        public double Balance { get; set; }
+
+        public TransactionDetails[]? History;
     }
 }
