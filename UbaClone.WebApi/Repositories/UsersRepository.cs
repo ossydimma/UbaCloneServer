@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
-using StackExchange.Redis;
-using System.Text.Json.Serialization;
 using UbaClone.WebApi.Data;
 
 namespace UbaClone.WebApi.Repositories;
@@ -33,21 +31,20 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         return fromDb;
     }
 
-    public  async Task<bool> VerifyPasswordAsync(string contact, string oldPassword)
+    public bool VerifyPasswordAsync(Models.UbaClone user, string password)
     {
         
-        Models.UbaClone? user = await GetUserByContactAsync(contact);
         if (user is null)
             return false;
+        
 
-        return Hasher.VerifyValue(oldPassword, user.PasswordHash, user.PasswordSalt);
+        return Hasher.VerifyValue(password, user.PasswordHash, user.PasswordSalt);
 
     }
 
-    public async Task<bool> VerifyPinAsync(string contact, string pin)
+    public bool VerifyPinAsync(Models.UbaClone user, string pin)
     {
 
-        Models.UbaClone? user = await GetUserByContactAsync(contact);
         if (user is null)
             return false;
 
@@ -55,9 +52,8 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     }
 
-    public async Task ChangePasswordAsync(string contact, string newPassword)
+    public async Task ChangePasswordAsync(Models.UbaClone user, string newPassword)
     {
-        Models.UbaClone? user = await GetUserByContactAsync(contact);
         if (user is not null)
         {
             Hasher.CreateValueHash(newPassword, out byte[] newPasswordHash, out byte[] newPasswordSalt);
@@ -70,8 +66,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
             if (affect == 1)
             {
-                string key = $"user:{user.Contact}";
-                await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
             }
             else
             {
@@ -86,28 +81,63 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
             
     }
 
+    public async Task ChangePinAsync (Models.UbaClone user, string newPin)
+    {
+        if (user is not null)
+        {
+            Hasher.CreateValueHash(newPin, out byte[] pinHash, out byte[] pinSalt);
+            user.PinHash = pinHash;
+            user.PinSalt = pinSalt;
+
+            _db.Update(user);
+            int affected = await _db.SaveChangesAsync();
+
+            if (affected == 1)
+            {
+                await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+            }
+            else
+            {
+                throw new Exception("Failed to Update PIN");
+            }
+        }
+        else
+        {
+            throw new Exception($"Unable to access user");
+        }
+
+    }
+
+    public async  Task<Models.UbaClone?> GetUserByAccountNo(int accountNumber)
+    {
+        Models.UbaClone? user = await _db.ubaClones.FirstOrDefaultAsync( u => u.AccountNumber == accountNumber );
+        if (user == null) return null;
+
+        return user;
+    }
+
      public async Task<Models.UbaClone[]> RetrieveAllAsync()
     {
         return await _db.ubaClones.ToArrayAsync();
 
     }
 
-    //public async Task<Models.UbaClone?> RetrieveAsync(int id)
-    //{
-    //    string key = $"user:{id}";
-    //    string? fromCache = await _distributedCache.GetStringAsync(key);
+    public async Task<Models.UbaClone?> RetrieveAsync(Guid id)
+    {
+        string key = $"user:{id}";
+        string? fromCache = await _distributedCache.GetStringAsync(key);
 
-    //    if (!string.IsNullOrEmpty(fromCache))
-    //        return JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
+        if (!string.IsNullOrEmpty(fromCache))
+            return JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
 
-    //   Models.UbaClone? fromDb = await _db.ubaClones.FirstOrDefaultAsync(u => u.Id == id);
-       
-    //    if(fromDb == null) return fromDb;
+        Models.UbaClone? fromDb = await _db.ubaClones.FirstOrDefaultAsync(u => u.Id == id);
 
-    //    await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(fromDb), _cacheEntryOptions);
+        if (fromDb == null) return fromDb;
 
-    //    return fromDb;
-    //}
+        await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(fromDb), _cacheEntryOptions);
+
+        return fromDb;
+    }
 
     public async Task<Models.UbaClone?> CreateUserAsync(Models.UbaClone user)
     {
@@ -140,7 +170,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         return null;
     }
 
-    public async Task<bool?> DeleteUserAsync(int id)
+    public async Task<bool?> DeleteUserAsync(Guid id)
     {
         string key = $"user:{id}";
 

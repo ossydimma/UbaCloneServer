@@ -29,25 +29,44 @@ namespace UbaClone.WebApi.Controllers
             //return Ok(clones);
             return await  _repo.RetrieveAllAsync();
         }
+        [HttpGet("{accountNumber}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> GetUserByAccountNo(int accountNumber)
+        {
+            Models.UbaClone? user = await _repo.GetUserByAccountNo(accountNumber);
+            if (user == null) return NotFound("You have entered an invalid beneficiary account number, please enter the correct and try again");
+
+            //user.History{
+            //    Name: "john",
+
+            //}
+            return Ok(user.FullName);
+        }
+
+        //[HttpPut]
+        //public async Task<IActionResult> Transcation()
+
         [HttpPost("Sign-in")]
         [ProducesResponseType(200, Type = typeof(Models.UbaClone))]
         [ProducesResponseType(400)]
         public async Task<IActionResult> CreateUser([FromBody] RegisterDto registerUser)
         {
-            if (registerUser is null)
-            {
-                return BadRequest();
-            }
+            if (registerUser is null) return BadRequest();
 
-            int maxAccountNo = await _repo.GetMaxAccountNo() ?? 200000000;
+            Models.UbaClone? existing = await _repo.GetUserByContactAsync(registerUser.Contact);
+            if (existing is not null)
+                return BadRequest($"User already exist,\nCan't register another user with this same contact:{registerUser.Contact}");
+
+            int maxAccountNo = await _repo.GetMaxAccountNo() ?? 20000000;
 
             Models.UbaClone user = new()
             {
                 FullName = registerUser.FullName,
                 Contact = registerUser.Contact,
                 AccountNumber = maxAccountNo + 1,
-                Balance = 0,
-                History = []
+                Balance = 20000,
+                TransactionHistory = []
             };
 
             Hasher.CreateValueHash(registerUser.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -64,23 +83,8 @@ namespace UbaClone.WebApi.Controllers
 
             if (addedUser == null) return BadRequest("Repository failed to create user");
 
-            return Ok(registerUser);
+            return Ok("Registered Successfuly");
 
-        }
-
-        [HttpPut("{contact}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateUser(string contact, [FromBody] Models.UbaClone user)
-        {
-            if (user is null || user.Contact != contact) return BadRequest();
-
-            Models.UbaClone? existing = await _repo.GetUserByContactAsync(contact);
-            if (existing == null) return NotFound();
-
-            await _repo.UpdateUserAsync(user);
-            return new NoContentResult();
         }
 
         [HttpPost("login")]
@@ -89,15 +93,14 @@ namespace UbaClone.WebApi.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             Models.UbaClone? user = await _repo.GetUserByContactAsync(loginDto.Contact);
             if (user is null) 
-                return Unauthorized("Invalid contact or passwod");
+                return Unauthorized("You don't have an account with us.");
 
-            bool isValidPassword = await _repo.VerifyPasswordAsync(user.Contact, loginDto.Password);
-            if (!isValidPassword)
-                return Unauthorized("Invalid contact or passsword");
+            if (!_repo.VerifyPasswordAsync(user, loginDto.Password))
+                return Unauthorized("Dear customer, You've entered an invalid password, Did you forget your password?");
 
             
 
@@ -113,11 +116,12 @@ namespace UbaClone.WebApi.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name , user.FullName),
-                    new Claim (ClaimTypes.MobilePhone, user.Contact),
-                    new Claim ("balance", user.Balance.ToString()),
+                    new Claim("FullName" , user.FullName),
+                    new Claim ("Contact", user.Contact),
+                    new Claim ("Balance", user.Balance.ToString()),
                     new Claim ("AccountNumber", user.AccountNumber.ToString()),
-                    new Claim("History", JsonConvert.SerializeObject(user.History))
+                    new Claim("History", JsonConvert.SerializeObject(user.TransactionHistory))
+                    
                 }), 
                 Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
                 Issuer = issuer,
@@ -132,62 +136,115 @@ namespace UbaClone.WebApi.Controllers
         [HttpPut("change-password")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> ChangePassword([FromBody]ChangePaswordDto model)
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            bool validPassword = await _repo.VerifyPasswordAsync(model.Contact, model.OldPasword);
+            Models.UbaClone? user = await _repo.GetUserByContactAsync(model.Contact);
+            if (user is null)
+                return NotFound ($" {model.Contact} Not found.");
+            
+            if ( !_repo.VerifyPasswordAsync(user, model.OldPassword) )
+                 return BadRequest("old password is incorrect.");
 
-            if (!validPassword) return BadRequest("old password is incorrect.");
+            if (_repo.VerifyPasswordAsync(user, model.NewPassword))
+                return BadRequest("Old and New password cannot be the same");
 
-            bool validPin = await _repo.VerifyPinAsync(model.Contact, model.Pin);
-            if (!validPin) return BadRequest("invalid Pin.");
+            if ( !_repo.VerifyPinAsync(user, model.Pin) )
+                return BadRequest("invalid Pin.");
 
-            await _repo.ChangePasswordAsync(model.Contact, model.NewPasword);
+            await _repo.ChangePasswordAsync(user, model.NewPassword);
+
             return Ok("Password changed successfully.");
         }
 
+        [HttpPut("Forgotten-Password")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> ForgottenPassword(ForgottenPasswordDTO model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        //[HttpGet("{id}", Name = nameof(GetUser) )]
-        //[ProducesResponseType(200, Type = typeof(Models.UbaClone))]
-        //[ProducesResponseType(404)]
-        //public async Task<IActionResult> GetUser(int id)
-        //{
+            Models.UbaClone? user = await  _repo.GetUserByContactAsync(model.Contact);
+            if (user is null)
+                return NotFound($"{model.Contact} is invalid. ");
 
-        //    Models.UbaClone? user = await _repo.RetrieveAsync(id);
-        //    if (user == null) return NotFound("user Not found");
+            if (!_repo.VerifyPinAsync(user, model.Pin))
+                return BadRequest("Invalid PIN");
 
-        //    return Ok(user);
-        //}
+            await _repo.ChangePasswordAsync(user, model.NewPassword);
 
+            return Ok("Password Changed Successfully");
 
+        }
 
-        //[HttpPut]
-        //public async Task<IActionResult> ChangePassword(int id,ChangePaswordDto changedValue)
-        //{
-        //    if (user is null || user.Id != id) return BadRequest();
+        [HttpPut("change-PIN")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> ChangePin(ChangePinDto model)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        //    Models.UbaClone? existing = await _repo.RetrieveAsync(id);
-        //    if (existing == null) return NotFound();
+            Models.UbaClone? user = await _repo.GetUserByContactAsync(model.Contact);
+            if (user is null)
+                return NotFound($" User:{model.Contact} Not found. ");
 
-        //    //thinking on add getUserByContact at the interface
+            if (!_repo.VerifyPinAsync(user, model.OldPin))
+                return BadRequest("old Pin is invalid.");
 
-        //}
-        //[HttpDelete("{id}")]
-        //[ProducesResponseType(204)]
-        //[ProducesResponseType(400)]
-        //[ProducesResponseType(404)]
-        //public async Task<IActionResult> DeleteUser(string contact)
-        //{
-        //    Models.UbaClone? user = await _repo.GetUserByContactAsync(contact);
-        //    if (user == null) return NotFound();
+            if (!_repo.VerifyPasswordAsync(user, model.Password))
+                return BadRequest("Entered an incorrect Password.");
 
-        //    bool? deleted = await _repo.DeleteUserAsync(id);
+            await _repo.ChangePinAsync(user, model.NewPin);
 
-        //    if (deleted.HasValue && deleted.Value) return new NoContentResult();
+            return Ok("PIN changed Successfully");
+        }
 
-        //    return BadRequest($"User {id} was found but failed to delete");
-        //}
+        [HttpPut("Forgotten-PIN")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> ForgottenPin(ForgottenPinDTO model)
+        {
+            // This method is securied enough just for learning seek
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            Models.UbaClone? user = await _repo.GetUserByContactAsync(model.Contact);
+            if (user is null)
+                return NotFound($" User:{model.Contact} not found. ");
+
+            if (!_repo.VerifyPasswordAsync(user, model.Password))
+                return BadRequest("Incorrect Password. ");
+
+            await _repo.ChangePinAsync(user, model.NewPin);
+
+            return Ok("PIN changed Sucessfully");
+        }
+
+        [HttpDelete("{contact}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteUser(string contact)
+        {
+            Models.UbaClone? user = await _repo.GetUserByContactAsync(contact);
+            if (user is null)
+                return NotFound("User not found. ");
+
+            bool? deleted = await _repo.DeleteUserAsync(user.Id);
+
+            if (deleted.HasValue && deleted.Value) return new NoContentResult();
+
+            return BadRequest($"User {user.Contact} was found but failed to delete");
+        }
 
     }
+   
+
+
 }

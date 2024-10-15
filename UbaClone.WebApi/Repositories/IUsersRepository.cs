@@ -4,13 +4,15 @@
     {
         Task<Models.UbaClone?> CreateUserAsync(Models.UbaClone user);
         Task<Models.UbaClone[]> RetrieveAllAsync();
-        //Task<Models.UbaClone?> RetrieveAsync(int id);
+        Task<Models.UbaClone?> RetrieveAsync(Guid id);
         Task<Models.UbaClone?> UpdateUserAsync(Models.UbaClone user);
-        Task<bool?> DeleteUserAsync(int id);
+        Task<bool?> DeleteUserAsync(Guid id);
         Task<int?> GetMaxAccountNo();
         Task<Models.UbaClone?> GetUserByContactAsync(string contact);
-        Task<bool> VerifyPasswordAsync(string contact,  string oldPassword);
-        Task<bool> VerifyPinAsync(string contact, string pin);
-        Task ChangePasswordAsync(string contact, string password);
+        bool VerifyPasswordAsync(Models.UbaClone user,  string Password);
+        bool VerifyPinAsync(Models.UbaClone user, string pin);
+        Task ChangePasswordAsync(Models.UbaClone user, string newPassword);
+        Task ChangePinAsync(Models.UbaClone user, string newPin);
+        Task<Models.UbaClone?> GetUserByAccountNo(int accountNumber);
     }
 }

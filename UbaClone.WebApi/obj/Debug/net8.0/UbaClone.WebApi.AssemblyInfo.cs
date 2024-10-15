@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UbaClone.WebApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1de71e304ff064f60c6dc95930e617e273268ff2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cfb4aee3f88cbb8e024d12c45f962da5fb027f2e")]
 [assembly: System.Reflection.AssemblyProductAttribute("UbaClone.WebApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UbaClone.WebApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -21,20 +21,15 @@
   },
   {
     "ContainingType": "UbaClone.WebApi.Controllers.UbaCloneController",
-    "Method": "UpdateUser",
+    "Method": "DeleteUser",
     "RelativePath": "api/UbaClone/{contact}",
-    "HttpMethod": "PUT",
+    "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "contact",
         "Type": "System.String",
-        "IsRequired": true
-      },
-      {
-        "Name": "user",
-        "Type": "UbaClone.WebApi.Models.UbaClone",
         "IsRequired": true
       }
     ],
@@ -74,7 +69,7 @@
     "Parameters": [
       {
         "Name": "model",
-        "Type": "UbaClone.WebApi.DTOs.ChangePaswordDto",
+        "Type": "UbaClone.WebApi.DTOs.ChangePasswordDto",
         "IsRequired": true
       }
     ],
@@ -92,6 +87,135 @@
           "text/json"
         ],
         "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
+    "ContainingType": "UbaClone.WebApi.Controllers.UbaCloneController",
+    "Method": "ChangePin",
+    "RelativePath": "api/UbaClone/change-PIN",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "UbaClone.WebApi.DTOs.ChangePinDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
+    "ContainingType": "UbaClone.WebApi.Controllers.UbaCloneController",
+    "Method": "ForgottenPassword",
+    "RelativePath": "api/UbaClone/Forgotten-Password",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "UbaClone.WebApi.DTOs.ForgottenPasswordDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
+    "ContainingType": "UbaClone.WebApi.Controllers.UbaCloneController",
+    "Method": "ForgottenPin",
+    "RelativePath": "api/UbaClone/Forgotten-PIN",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "UbaClone.WebApi.DTOs.ForgottenPinDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
       }
     ]
   },

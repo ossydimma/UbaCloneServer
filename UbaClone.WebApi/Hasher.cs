@@ -1,5 +1,5 @@
-﻿using System.Security.Cryptography;
-using System.Text; // To use HMACSHA512
+﻿using System.Security.Cryptography; // To use HMACSHA512
+using System.Text;
 
 
 namespace UbaClone.WebApi;
@@ -21,6 +21,8 @@ public class Hasher
         {
             var computeHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(value));
             return computeHash.SequenceEqual(valueHash);
+
+         
         }
     }
 
