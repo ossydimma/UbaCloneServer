@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System.Reflection;
 using UbaClone.WebApi.Data;
 
 namespace UbaClone.WebApi.Repositories;
@@ -130,7 +131,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         if (!string.IsNullOrEmpty(fromCache))
             return JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
 
-        Models.UbaClone? fromDb = await _db.ubaClones.FirstOrDefaultAsync(u => u.Id == id);
+        Models.UbaClone? fromDb = await _db.ubaClones.FirstOrDefaultAsync(u => u.UserId == id);
 
         if (fromDb == null) return fromDb;
 
@@ -170,6 +171,38 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         return null;
     }
 
+    public async Task<bool> SaveAsync(Models.UbaClone user)
+    {
+        // Ensure no other entity with the same key is being tracked
+        _db.Entry(user).State = EntityState.Detached;
+
+        // Attach the user entity and mark it as modified
+        _db.Attach(user);
+        _db.Entry(user).State = EntityState.Modified;
+
+        try
+        {
+            // Save the changes
+            int affected = await _db.SaveChangesAsync();
+
+            if (affected > 0)
+            {
+                await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                return true;
+            }else
+            {
+                return false;
+            }
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            // Handle concurrency conflict
+            Console.WriteLine(ex);
+            return false;
+            //return Conflict("Concurrency conflict detected. The data may have been modified or deleted.");
+        }
+
+    }
     public async Task<bool?> DeleteUserAsync(Guid id)
     {
         string key = $"user:{id}";

@@ -16,10 +16,14 @@ namespace UbaClone.WebApi.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Models.UbaClone>()
+                .HasKey(u => u.UserId);
+
+            modelBuilder.Entity<Models.UbaClone>()
                 .HasMany(u => u.TransactionHistory)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
 
+            base.OnModelCreating(modelBuilder);
         }
 
     }

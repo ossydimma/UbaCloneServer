@@ -29,23 +29,31 @@ namespace UbaClone.WebApi.Controllers
             //return Ok(clones);
             return await  _repo.RetrieveAllAsync();
         }
+
         [HttpGet("{accountNumber}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetUserByAccountNo(int accountNumber)
+        public async Task<IActionResult> GetUsersName(int accountNumber)
         {
             Models.UbaClone? user = await _repo.GetUserByAccountNo(accountNumber);
             if (user == null) return NotFound("You have entered an invalid beneficiary account number, please enter the correct and try again");
 
-            //user.History{
-            //    Name: "john",
-
-            //}
             return Ok(user.FullName);
         }
 
-        //[HttpPut]
-        //public async Task<IActionResult> Transcation()
+        [HttpPost("Verify-Account")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> GetBeneficiary(VerifyAccountDTO model)
+        {
+
+            if (model.Receiver == model.Sender) return BadRequest("You can't make transfer to your account");
+
+            Models.UbaClone? user = await _repo.GetUserByAccountNo(model.Receiver);
+            if (user == null) return NotFound("You have entered an invalid beneficiary account number, please enter the correct and try again");
+
+            return Ok(user.FullName);
+        }
 
         [HttpPost("Sign-in")]
         [ProducesResponseType(200, Type = typeof(Models.UbaClone))]
@@ -131,6 +139,89 @@ namespace UbaClone.WebApi.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return Ok(tokenHandler.WriteToken(token));
+        }
+
+        [HttpPost("Transfer-Money")]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> TransferMoney(SendMoneyDTO model)
+        {
+            if (!ModelState.IsValid) return BadRequest("Sent Data does not match request data");
+
+            Models.UbaClone? sender = await _repo.GetUserByAccountNo(model.SenderAccountNumber);
+            if (sender == null) return BadRequest("Transcation failed.");
+
+            Models.UbaClone? receiver = await _repo.GetUserByAccountNo(model.ReceiversAccountNumber);
+            if (receiver == null) return BadRequest("Transaction failed, Verify beneficiary account number");
+
+            if ( ! _repo.VerifyPinAsync(sender, model.SenderPin) )
+                return BadRequest("Entered an Invalid PIN");
+
+            if (sender.Balance < model.Amount) return BadRequest("Insufficient fund");
+
+            sender.Balance -= model.Amount;
+            receiver.Balance += model.Amount;
+            TransactionDetails receiverHistory = new()
+            {
+                Amount = model.Amount,
+                Name = sender.FullName,
+                Narrator = model.Narrator,  
+                Number = sender.AccountNumber,
+                Date = model.Date,
+                Time = model.Time,
+                TypeOfTranscation = "Credit",
+            };
+            TransactionDetails senderHistory = new()
+            {
+                Amount = model.Amount,
+                Name = receiver.FullName,
+                Narrator = model.Narrator,
+                Number = receiver.AccountNumber,
+                Date = model.Date,
+                Time = model.Time,
+                TypeOfTranscation = "Debit",
+            };
+
+
+            sender.TransactionHistory.Add(senderHistory);
+            receiver.TransactionHistory.Add(receiverHistory);
+
+            
+            bool savedSender = await _repo.SaveAsync(sender);
+            bool savedReceiver = await _repo.SaveAsync(receiver);
+
+            if (!savedSender && !savedReceiver) 
+                return BadRequest("Transaction failed");
+            var jwtSetting = _config.GetSection("JwtSettings");
+
+            var key = Encoding.UTF8.GetBytes(jwtSetting["Secret"]!);
+            var issuer = jwtSetting["Issuer"];
+            var audience = jwtSetting["Audience"];
+            var expirationMinutes = int.Parse(jwtSetting["ExpirationMinutes"]!);
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim("FullName" , sender.FullName),
+                    new Claim ("Contact", sender.Contact),
+                    new Claim ("Balance", sender.Balance.ToString()),
+                    new Claim ("AccountNumber", sender.AccountNumber.ToString()),
+                    new Claim("History", JsonConvert.SerializeObject(sender.TransactionHistory))
+
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return Ok(tokenHandler.WriteToken(token));
+
+            //return Ok($"You have successfully transferred NGN{model.Amount} to {receiver.FullName} Account Number: {receiver.AccountNumber}");
+
+
         }
 
         [HttpPut("change-password")]
@@ -236,7 +327,7 @@ namespace UbaClone.WebApi.Controllers
             if (user is null)
                 return NotFound("User not found. ");
 
-            bool? deleted = await _repo.DeleteUserAsync(user.Id);
+            bool? deleted = await _repo.DeleteUserAsync(user.UserId);
 
             if (deleted.HasValue && deleted.Value) return new NoContentResult();
 

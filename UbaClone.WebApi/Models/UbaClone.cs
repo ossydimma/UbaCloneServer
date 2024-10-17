@@ -5,7 +5,7 @@ namespace UbaClone.WebApi.Models
     public class UbaClone
     {
         //change id type to guild
-        public Guid Id { get; set; } = new Guid();
+        public Guid UserId { get; set; } = Guid.NewGuid();
         public string FullName { get; set; } = null!;
         public byte[] PasswordHash { get; set; } = null!;
         public byte[] PasswordSalt { get; set; } = null!;

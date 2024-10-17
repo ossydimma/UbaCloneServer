@@ -14,5 +14,8 @@
         Task ChangePasswordAsync(Models.UbaClone user, string newPassword);
         Task ChangePinAsync(Models.UbaClone user, string newPin);
         Task<Models.UbaClone?> GetUserByAccountNo(int accountNumber);
+
+        //Task UpdateUser ();
+        Task<bool> SaveAsync(Models.UbaClone user);
     }
 }

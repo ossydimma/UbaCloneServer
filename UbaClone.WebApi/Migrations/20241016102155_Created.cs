@@ -6,27 +6,29 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace UbaClone.WebApi.Migrations
 {
     /// <inheritdoc />
-    public partial class ModifiedField : Migration
+    public partial class Created : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<decimal>(
-                name: "Balance",
-                table: "ubaClones",
-                type: "decimal(18,2)",
-                nullable: false,
-                oldClrType: typeof(double),
-                oldType: "float");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "Id",
-                table: "ubaClones",
-                type: "uniqueidentifier",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+            migrationBuilder.CreateTable(
+                name: "ubaClones",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    PinHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    PinSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Contact = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AccountNumber = table.Column<int>(type: "int", nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ubaClones", x => x.UserId);
+                });
 
             migrationBuilder.CreateTable(
                 name: "TransactionHistories",
@@ -40,23 +42,23 @@ namespace UbaClone.WebApi.Migrations
                     Time = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Narrator = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TypeOfTranscation = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UbaCloneId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UbaCloneUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TransactionHistories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TransactionHistories_ubaClones_UbaCloneId",
-                        column: x => x.UbaCloneId,
+                        name: "FK_TransactionHistories_ubaClones_UbaCloneUserId",
+                        column: x => x.UbaCloneUserId,
                         principalTable: "ubaClones",
-                        principalColumn: "Id",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionHistories_UbaCloneId",
+                name: "IX_TransactionHistories_UbaCloneUserId",
                 table: "TransactionHistories",
-                column: "UbaCloneId");
+                column: "UbaCloneUserId");
         }
 
         /// <inheritdoc />
@@ -65,22 +67,8 @@ namespace UbaClone.WebApi.Migrations
             migrationBuilder.DropTable(
                 name: "TransactionHistories");
 
-            migrationBuilder.AlterColumn<double>(
-                name: "Balance",
-                table: "ubaClones",
-                type: "float",
-                nullable: false,
-                oldClrType: typeof(decimal),
-                oldType: "decimal(18,2)");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "ubaClones",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uniqueidentifier")
-                .Annotation("SqlServer:Identity", "1, 1");
+            migrationBuilder.DropTable(
+                name: "ubaClones");
         }
     }
 }

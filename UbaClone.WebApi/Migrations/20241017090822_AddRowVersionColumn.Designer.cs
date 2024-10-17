@@ -12,8 +12,8 @@ using UbaClone.WebApi.Data;
 namespace UbaClone.WebApi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20241015190251_ModifiedField")]
-    partial class ModifiedField
+    [Migration("20241017090822_AddRowVersionColumn")]
+    partial class AddRowVersionColumn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,7 +27,7 @@ namespace UbaClone.WebApi.Migrations
 
             modelBuilder.Entity("UbaClone.WebApi.Models.UbaClone", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -61,7 +61,7 @@ namespace UbaClone.WebApi.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserId");
 
                     b.ToTable("ubaClones");
                 });
@@ -90,6 +90,12 @@ namespace UbaClone.WebApi.Migrations
                     b.Property<int>("Number")
                         .HasColumnType("int");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("Time")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -98,12 +104,12 @@ namespace UbaClone.WebApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("UbaCloneId")
+                    b.Property<Guid?>("UbaCloneUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UbaCloneId");
+                    b.HasIndex("UbaCloneUserId");
 
                     b.ToTable("TransactionHistories");
                 });
@@ -112,7 +118,7 @@ namespace UbaClone.WebApi.Migrations
                 {
                     b.HasOne("UbaClone.WebApi.Models.UbaClone", null)
                         .WithMany("TransactionHistory")
-                        .HasForeignKey("UbaCloneId")
+                        .HasForeignKey("UbaCloneUserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
