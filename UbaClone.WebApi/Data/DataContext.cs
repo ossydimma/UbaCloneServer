@@ -10,7 +10,7 @@ namespace UbaClone.WebApi.Data
         
         }
 
-        public DbSet<Models.UbaClone> ubaClones { get; set; }
+        public DbSet<Models.UbaClone> Users { get; set; }
         public DbSet<TransactionDetails> TransactionHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -19,11 +19,9 @@ namespace UbaClone.WebApi.Data
                 .HasKey(u => u.UserId);
 
             modelBuilder.Entity<Models.UbaClone>()
-                .HasMany(u => u.TransactionHistory)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            base.OnModelCreating(modelBuilder);
+               .HasMany(p => p.TransactionHistory)
+               .WithOne(c => c.UbaCloneUser)
+               .HasForeignKey(c => c.UbaCloneUserId);
         }
 
     }

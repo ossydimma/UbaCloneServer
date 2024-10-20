@@ -1,9 +1,13 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.Reflection;
 using UbaClone.WebApi.Data;
+using UbaClone.WebApi.DTOs;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UbaClone.WebApi.Repositories;
 
@@ -23,7 +27,9 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         if (!string.IsNullOrEmpty(fromCache))
             return JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
 
-        Models.UbaClone? fromDb = await _db.ubaClones.FirstOrDefaultAsync(u => u.Contact == contact);
+        Models.UbaClone? fromDb = await _db.Users
+            .Include(u => u.TransactionHistory)
+            .FirstOrDefaultAsync(u => u.Contact == contact);
 
         if (fromDb == null) return fromDb;
 
@@ -111,7 +117,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async  Task<Models.UbaClone?> GetUserByAccountNo(int accountNumber)
     {
-        Models.UbaClone? user = await _db.ubaClones.FirstOrDefaultAsync( u => u.AccountNumber == accountNumber );
+        Models.UbaClone? user = await _db.Users.FirstOrDefaultAsync( u => u.AccountNumber == accountNumber );
         if (user == null) return null;
 
         return user;
@@ -119,7 +125,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
      public async Task<Models.UbaClone[]> RetrieveAllAsync()
     {
-        return await _db.ubaClones.ToArrayAsync();
+        return await _db.Users.ToArrayAsync();
 
     }
 
@@ -131,7 +137,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         if (!string.IsNullOrEmpty(fromCache))
             return JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
 
-        Models.UbaClone? fromDb = await _db.ubaClones.FirstOrDefaultAsync(u => u.UserId == id);
+        Models.UbaClone? fromDb = await _db.Users.FirstOrDefaultAsync(u => u.UserId == id);
 
         if (fromDb == null) return fromDb;
 
@@ -144,7 +150,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
     {
         string key = $"user:{user.Contact}";
 
-        await _db.ubaClones.AddAsync(user);
+        await _db.Users.AddAsync(user);
         int affect = await _db.SaveChangesAsync();
 
         if (affect == 1)
@@ -171,46 +177,54 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         return null;
     }
 
-    public async Task<bool> SaveAsync(Models.UbaClone user)
+    public async Task SaveAsync()
     {
-        // Ensure no other entity with the same key is being tracked
-        _db.Entry(user).State = EntityState.Detached;
+        // Save changes to the context
+        await _db.SaveChangesAsync();
+    }
 
-        // Attach the user entity and mark it as modified
-        _db.Attach(user);
+    public async Task UpdateAsync(Models.UbaClone user)
+    {
+        // Update the entity state to modified
         _db.Entry(user).State = EntityState.Modified;
+        int affected = await _db.SaveChangesAsync();
 
-        try
-        {
-            // Save the changes
-            int affected = await _db.SaveChangesAsync();
-
-            if (affected > 0)
-            {
-                await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
-                return true;
-            }else
-            {
-                return false;
-            }
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            // Handle concurrency conflict
-            Console.WriteLine(ex);
-            return false;
-            //return Conflict("Concurrency conflict detected. The data may have been modified or deleted.");
-        }
+        if (affected > 0)
+            await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
 
     }
+
+    public List<HistoryDTO> GetTransactionHistories(Models.UbaClone user)
+    {
+        var histories = _db.TransactionHistories
+            .Where(t => t.UbaCloneUserId == user.UserId)
+            .AsEnumerable()
+            .OrderByDescending(t => DateTime.ParseExact(t.Date + " " + t.Time, "ddd MMM dd yyyy h:mm tt", CultureInfo.InvariantCulture))
+            .Select(t => new HistoryDTO
+            {
+            Name = t.Name,
+            Number = t.Number,
+            Date = t.Date,
+            Time = t.Time,
+            Amount = t.Amount,
+            Narrator = t.Narrator,
+            TypeOfTranscation = t.TypeOfTranscation
+            }).ToList();
+        if (histories is null || !histories.Any())
+            return [];
+
+        return histories;
+
+    }
+
     public async Task<bool?> DeleteUserAsync(Guid id)
     {
         string key = $"user:{id}";
 
-        Models.UbaClone? user = await _db.ubaClones.FindAsync(id);
+        Models.UbaClone? user = await _db.Users.FindAsync(id);
         if (user is null) return null;
 
-        _db.ubaClones.Remove(user);
+        _db.Users.Remove(user);
         int affect = await _db.SaveChangesAsync();
 
         if (affect == 1)
@@ -223,7 +237,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async Task<int?> GetMaxAccountNo()
     {
-        return await _db.ubaClones.MaxAsync(c => (int?)c.AccountNumber);
+        return await _db.Users.MaxAsync(c => (int?)c.AccountNumber);
     }
     
 }

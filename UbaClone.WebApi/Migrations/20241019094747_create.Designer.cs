@@ -12,8 +12,8 @@ using UbaClone.WebApi.Data;
 namespace UbaClone.WebApi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20241017090822_AddRowVersionColumn")]
-    partial class AddRowVersionColumn
+    [Migration("20241019094747_create")]
+    partial class create
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -63,7 +63,7 @@ namespace UbaClone.WebApi.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("ubaClones");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("UbaClone.WebApi.TransactionDetails", b =>
@@ -104,7 +104,7 @@ namespace UbaClone.WebApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("UbaCloneUserId")
+                    b.Property<Guid>("UbaCloneUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -116,10 +116,13 @@ namespace UbaClone.WebApi.Migrations
 
             modelBuilder.Entity("UbaClone.WebApi.TransactionDetails", b =>
                 {
-                    b.HasOne("UbaClone.WebApi.Models.UbaClone", null)
+                    b.HasOne("UbaClone.WebApi.Models.UbaClone", "UbaCloneUser")
                         .WithMany("TransactionHistory")
                         .HasForeignKey("UbaCloneUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UbaCloneUser");
                 });
 
             modelBuilder.Entity("UbaClone.WebApi.Models.UbaClone", b =>

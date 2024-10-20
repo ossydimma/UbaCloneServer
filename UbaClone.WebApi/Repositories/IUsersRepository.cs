@@ -1,4 +1,7 @@
-﻿namespace UbaClone.WebApi.Repositories
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using UbaClone.WebApi.DTOs;
+
+namespace UbaClone.WebApi.Repositories
 {
     public interface IUsersRepository
     {
@@ -14,8 +17,10 @@
         Task ChangePasswordAsync(Models.UbaClone user, string newPassword);
         Task ChangePinAsync(Models.UbaClone user, string newPin);
         Task<Models.UbaClone?> GetUserByAccountNo(int accountNumber);
+        //Task<IDbContextTransaction> BeginTransactionAsync();
+        Task UpdateAsync(Models.UbaClone entity);
 
-        //Task UpdateUser ();
-        Task<bool> SaveAsync(Models.UbaClone user);
+        List<HistoryDTO>  GetTransactionHistories(Models.UbaClone entity);
+        Task SaveAsync();
     }
 }

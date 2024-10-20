@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace UbaClone.WebApi.Migrations
 {
     /// <inheritdoc />
-    public partial class Created : Migration
+    public partial class create : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ubaClones",
+                name: "Users",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -27,7 +27,7 @@ namespace UbaClone.WebApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ubaClones", x => x.UserId);
+                    table.PrimaryKey("PK_Users", x => x.UserId);
                 });
 
             migrationBuilder.CreateTable(
@@ -42,15 +42,16 @@ namespace UbaClone.WebApi.Migrations
                     Time = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Narrator = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TypeOfTranscation = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UbaCloneUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UbaCloneUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TransactionHistories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TransactionHistories_ubaClones_UbaCloneUserId",
+                        name: "FK_TransactionHistories_Users_UbaCloneUserId",
                         column: x => x.UbaCloneUserId,
-                        principalTable: "ubaClones",
+                        principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -68,7 +69,7 @@ namespace UbaClone.WebApi.Migrations
                 name: "TransactionHistories");
 
             migrationBuilder.DropTable(
-                name: "ubaClones");
+                name: "Users");
         }
     }
 }

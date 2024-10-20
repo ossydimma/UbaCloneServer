@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UbaClone.WebApi.Models
 {
@@ -17,6 +18,8 @@ namespace UbaClone.WebApi.Models
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Balance { get; set; }
 
-        public List<TransactionDetails> TransactionHistory = [];
+        [JsonIgnore]  // Prevent circular reference
+        public virtual List<TransactionDetails> TransactionHistory { get; set; } = new List<TransactionDetails>();
+
     }
 }

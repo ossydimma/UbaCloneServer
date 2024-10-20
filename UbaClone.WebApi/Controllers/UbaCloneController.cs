@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Pipelines.Sockets.Unofficial.Arenas;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Channels;
@@ -25,8 +27,6 @@ namespace UbaClone.WebApi.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<Models.UbaClone>) )]
         public async Task<IEnumerable<Models.UbaClone>> GetAll()
         {
-            //var clones = await _db.ubaClones.ToListAsync();
-            //return Ok(clones);
             return await  _repo.RetrieveAllAsync();
         }
 
@@ -85,7 +85,11 @@ namespace UbaClone.WebApi.Controllers
             user.PinHash = pinHash;
             user.PinSalt = pinSalt;
 
-
+            // Generate new GUIDs for children if not already set
+            foreach (var history in user.TransactionHistory)
+            {
+                history.Id = Guid.NewGuid();
+            }
 
             Models.UbaClone? addedUser = await _repo.CreateUserAsync(user);
 
@@ -110,7 +114,7 @@ namespace UbaClone.WebApi.Controllers
             if (!_repo.VerifyPasswordAsync(user, loginDto.Password))
                 return Unauthorized("Dear customer, You've entered an invalid password, Did you forget your password?");
 
-            
+            var allTransaction = _repo.GetTransactionHistories(user);
 
             var jwtSetting = _config.GetSection("JwtSettings");
 
@@ -128,7 +132,7 @@ namespace UbaClone.WebApi.Controllers
                     new Claim ("Contact", user.Contact),
                     new Claim ("Balance", user.Balance.ToString()),
                     new Claim ("AccountNumber", user.AccountNumber.ToString()),
-                    new Claim("History", JsonConvert.SerializeObject(user.TransactionHistory))
+                    new Claim("History", JsonConvert.SerializeObject(allTransaction))
                     
                 }), 
                 Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
@@ -142,55 +146,64 @@ namespace UbaClone.WebApi.Controllers
         }
 
         [HttpPost("Transfer-Money")]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> TransferMoney(SendMoneyDTO model)
         {
             if (!ModelState.IsValid) return BadRequest("Sent Data does not match request data");
 
             Models.UbaClone? sender = await _repo.GetUserByAccountNo(model.SenderAccountNumber);
-            if (sender == null) return BadRequest("Transcation failed.");
+            if (sender == null) return BadRequest("Transaction failed.");
 
             Models.UbaClone? receiver = await _repo.GetUserByAccountNo(model.ReceiversAccountNumber);
             if (receiver == null) return BadRequest("Transaction failed, Verify beneficiary account number");
 
-            if ( ! _repo.VerifyPinAsync(sender, model.SenderPin) )
+            if (!_repo.VerifyPinAsync(sender, model.SenderPin))
                 return BadRequest("Entered an Invalid PIN");
 
-            if (sender.Balance < model.Amount) return BadRequest("Insufficient fund");
+            if (model.Amount <= 0) return BadRequest("Amount must be above 1");
+
+            if (sender.Balance < model.Amount) return BadRequest("Insufficient funds");
 
             sender.Balance -= model.Amount;
+            await _repo.UpdateAsync(sender); // Update sender  
+
             receiver.Balance += model.Amount;
-            TransactionDetails receiverHistory = new()
-            {
-                Amount = model.Amount,
-                Name = sender.FullName,
-                Narrator = model.Narrator,  
-                Number = sender.AccountNumber,
-                Date = model.Date,
-                Time = model.Time,
-                TypeOfTranscation = "Credit",
-            };
+            await _repo.UpdateAsync(receiver); // Update receiver
+
+            // Create transaction history entries
             TransactionDetails senderHistory = new()
             {
                 Amount = model.Amount,
                 Name = receiver.FullName,
                 Narrator = model.Narrator,
-                Number = receiver.AccountNumber,
+                Number = model.ReceiversAccountNumber,
                 Date = model.Date,
                 Time = model.Time,
                 TypeOfTranscation = "Debit",
+                UbaCloneUser = sender
+            };
+            sender.TransactionHistory.Add(senderHistory);
+
+            TransactionDetails receiverHistory = new()
+            {
+                Amount = model.Amount,
+                Name = sender.FullName,
+                Narrator = model.Narrator,
+                Number = sender.AccountNumber,
+                Date = model.Date,
+                Time = model.Time,
+                TypeOfTranscation = "Credit",
+                UbaCloneUser = receiver
             };
 
-
-            sender.TransactionHistory.Add(senderHistory);
             receiver.TransactionHistory.Add(receiverHistory);
 
-            
-            bool savedSender = await _repo.SaveAsync(sender);
-            bool savedReceiver = await _repo.SaveAsync(receiver);
+            await _repo.SaveAsync(); // Save changes in a single transaction
 
-            if (!savedSender && !savedReceiver) 
-                return BadRequest("Transaction failed");
+
+            var allTransaction = _repo.GetTransactionHistories(sender);
+
             var jwtSetting = _config.GetSection("JwtSettings");
 
             var key = Encoding.UTF8.GetBytes(jwtSetting["Secret"]!);
@@ -207,7 +220,7 @@ namespace UbaClone.WebApi.Controllers
                     new Claim ("Contact", sender.Contact),
                     new Claim ("Balance", sender.Balance.ToString()),
                     new Claim ("AccountNumber", sender.AccountNumber.ToString()),
-                    new Claim("History", JsonConvert.SerializeObject(sender.TransactionHistory))
+                    new Claim("History", JsonConvert.SerializeObject(allTransaction))
 
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
@@ -218,9 +231,6 @@ namespace UbaClone.WebApi.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return Ok(tokenHandler.WriteToken(token));
-
-            //return Ok($"You have successfully transferred NGN{model.Amount} to {receiver.FullName} Account Number: {receiver.AccountNumber}");
-
 
         }
 
