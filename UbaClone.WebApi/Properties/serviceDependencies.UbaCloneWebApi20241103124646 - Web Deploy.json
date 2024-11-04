@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/UbaCloneWebApi20241103124646/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsDefaultConnection_BCCD2671E9",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/ubaclone-webapidbserver/databases/UbaClone.WebApi_db",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:DefaultConnection",
+      "dynamicId": null
+    },
+    "redis1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/UbaCloneWebApi20241103124646/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsRedisConnection_CEC3C236F8",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Cache/Redis/UbaCloneWebApicache",
+      "type": "redis.azure",
+      "connectionId": "ConnectionStrings:RedisConnection",
+      "dynamicId": null
+    }
+  }
+}

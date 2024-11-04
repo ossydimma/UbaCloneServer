@@ -144,6 +144,9 @@ namespace UbaClone.WebApi.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return Ok(tokenHandler.WriteToken(token));
         }
+        [HttpPost("Mobile-tranfer")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
 
         [HttpPost("Transfer-Money")]
         [ProducesResponseType(200)]

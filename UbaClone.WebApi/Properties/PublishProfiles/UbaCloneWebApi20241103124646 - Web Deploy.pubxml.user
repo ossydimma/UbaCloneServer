@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAP2zofshUJk6YSXfWtagchQAAAAACAAAAAAAQZgAAAAEAACAAAACibgAwRFMGgcMTdBFetIxCEQlsO0IoEvbIfUYwn1DYhQAAAAAOgAAAAAIAACAAAAAcVnLfGZ5WJPWoeq3dPLrbez7xDqYFowk+95oRM00ru4AAAADsiZVtKzlGwNkpisB+PH8YgZ8lQJ8Hwox3ECkv+id+oXwQMgZrkqOTdJYIQCtRfrHG1cJXBd7mC2TXEJ+9Sc5RdK7RVMcHhUOlOln6HEpED3mQl/SUcmw2NaagXImqQIlDbrmhyReSFYNDoUgkGjb1aXJglgW+tW/MSck5j05uz0AAAAA8VEEgfYMrBNMgWIzlwsGI3Q+8jwM8VcppALj/nGdof886kgbMDN5Vxh3cBx43EMgALRMYo9Z22byz5NsvpgP6</EncryptedPassword>
+    <History>True|2024-11-04T06:01:30.0746932Z;True|2024-11-04T09:41:24.9213014+04:00;True|2024-11-04T09:37:24.7949439+04:00;False|2024-11-04T09:35:00.8178777+04:00;True|2024-11-04T09:29:17.8267157+04:00;False|2024-11-04T09:27:16.9887979+04:00;False|2024-11-04T09:24:29.3914205+04:00;True|2024-11-03T16:59:44.2142795+04:00;True|2024-11-03T16:40:28.7822112+04:00;True|2024-11-03T16:23:46.5868771+04:00;True|2024-11-03T15:38:17.4071718+04:00;True|2024-11-03T13:57:44.3807937+04:00;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <EFMigrations Include="UbaClone.WebApi.Data.DataContext">
+      <Value>Data Source=ubaclone-webapidbserver.database.windows.net,1433%3bInitial Catalog=UbaClone.WebApi_db%3bUser ID=ositadimma%3bPassword=oatMeal%40070</Value>
+    </EFMigrations>
+  </ItemGroup>
+</Project>

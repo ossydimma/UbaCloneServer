@@ -1,0 +1,34 @@
+{
+  "dependencies": {
+    "redis1": {
+      "restored": true,
+      "restoreTime": "2024-11-03T09:50:21.0339096Z"
+    },
+    "mssql1": {
+      "restored": true,
+      "restoreTime": "2024-11-03T09:23:41.355505Z"
+    }
+  },
+  "parameters": {
+    "mssql1.subscriptionId": {
+      "Name": "mssql1.subscriptionId",
+      "Type": "subscription",
+      "Value": "e0c9bf21-bdd3-4387-a3b2-2c8c4aa65b43"
+    },
+    "redis1.resourceGroupName": {
+      "Name": "redis1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "UbaCloneWebApi20241103124646ResourceGroup"
+    },
+    "mssql1.resourceGroupName": {
+      "Name": "mssql1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "UbaCloneWebApi20241103124646ResourceGroup"
+    },
+    "redis1.subscriptionId": {
+      "Name": "redis1.subscriptionId",
+      "Type": "subscription",
+      "Value": "e0c9bf21-bdd3-4387-a3b2-2c8c4aa65b43"
+    }
+  }
+}

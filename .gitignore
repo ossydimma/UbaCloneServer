@@ -1,1 +1,4 @@
 .vs/ 
+# Ignore appsettings.json if it contains sensitive data
+appsettings.json
+
