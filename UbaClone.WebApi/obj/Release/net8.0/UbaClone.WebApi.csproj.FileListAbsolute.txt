@@ -56,7 +56,6 @@ C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Releas
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\System.Runtime.Caching.dll
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\System.Security.Permissions.dll
-C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\System.Text.Json.dll
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\System.Windows.Extensions.dll
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\de\Microsoft.CodeAnalysis.resources.dll
@@ -158,3 +157,7 @@ C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Releas
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\Microsoft.Identity.Web.UI.dll
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\Microsoft.IdentityModel.LoggingExtensions.dll
 C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\Microsoft.IdentityModel.Validators.dll
+C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\bin\Release\net8.0\UbaClone.WebApi.staticwebassets.endpoints.json
+C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\obj\Release\net8.0\staticwebassets.build.endpoints.json
+C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\obj\Release\net8.0\staticwebassets\msbuild.UbaClone.WebApi.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\user\Desktop\DotNet_Projects\UbaClone.WebApi\UbaClone.WebApi\obj\Release\net8.0\staticwebassets.upToDateCheck.txt

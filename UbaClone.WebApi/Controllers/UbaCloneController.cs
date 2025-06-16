@@ -46,6 +46,7 @@ namespace UbaClone.WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetBeneficiary(VerifyAccountDTO model)
         {
+            // if (string.IsNullOrEmpty(model.reciever))
 
             if (model.Receiver == model.Sender) return BadRequest("You can't make transfer to your account");
 
@@ -330,6 +331,21 @@ namespace UbaClone.WebApi.Controllers
             return Ok("PIN changed Sucessfully");
         }
 
+        [HttpPost("Transaction-history")]
+        public async Task<IActionResult> GetTransactionHistory(string contact)
+        {
+            if (string.IsNullOrEmpty(contact))
+                return BadRequest("Contact can't be null.");
+
+            Models.UbaClone? user = await _repo.GetUserByContactAsync(contact);
+            if (user is null)
+                return NotFound("User not found.");
+
+            var transactionHistory = _repo.GetTransactionHistories(user);
+
+            return Ok(transactionHistory);
+        }
+
         [HttpDelete("{contact}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -338,7 +354,7 @@ namespace UbaClone.WebApi.Controllers
         {
             Models.UbaClone? user = await _repo.GetUserByContactAsync(contact);
             if (user is null)
-                return NotFound("User not found. ");
+                return NotFound("User not found.");
 
             bool? deleted = await _repo.DeleteUserAsync(user.UserId);
 

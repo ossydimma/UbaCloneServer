@@ -21,7 +21,8 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async Task<Models.UbaClone?> GetUserByContactAsync(string contact)
     {
-        string key = $"user:{contact}";
+        string key = $"UBACLONE-user:{contact}";
+
         string? fromCache = await _distributedCache.GetStringAsync(key);
 
         if (!string.IsNullOrEmpty(fromCache))
@@ -73,7 +74,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
             if (affect == 1)
             {
-                await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
             }
             else
             {
@@ -101,7 +102,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
             if (affected == 1)
             {
-                await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
             }
             else
             {
@@ -131,7 +132,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async Task<Models.UbaClone?> RetrieveAsync(Guid id)
     {
-        string key = $"user:{id}";
+        string key = $"UBACLONE-user:{id}";
         string? fromCache = await _distributedCache.GetStringAsync(key);
 
         if (!string.IsNullOrEmpty(fromCache))
@@ -148,7 +149,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async Task<Models.UbaClone?> CreateUserAsync(Models.UbaClone user)
     {
-        string key = $"user:{user.Contact}";
+        string key = $"UBACLONE-user:{user.Contact}";
 
         await _db.Users.AddAsync(user);
         int affect = await _db.SaveChangesAsync();
@@ -164,7 +165,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async Task<Models.UbaClone?> UpdateUserAsync(Models.UbaClone user)
     {
-        string key = $"user:{user.Contact}";
+        string key = $"UBACLONE-user:{user.Contact}";
 
         _db.Update(user);
         int affect = await _db.SaveChangesAsync();
@@ -190,7 +191,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         int affected = await _db.SaveChangesAsync();
 
         if (affected > 0)
-            await _distributedCache.SetStringAsync($"user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+            await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
 
     }
 
@@ -219,7 +220,7 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async Task<bool?> DeleteUserAsync(Guid id)
     {
-        string key = $"user:{id}";
+        string key = $"UBACLONE-user:{id}";
 
         Models.UbaClone? user = await _db.Users.FindAsync(id);
         if (user is null) return null;

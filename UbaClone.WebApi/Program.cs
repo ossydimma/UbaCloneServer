@@ -9,6 +9,8 @@ using UbaClone.WebApi.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Identity.Web;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Combine both JwtBearer and MicrosoftIdentityWebApi configurations
@@ -41,20 +43,14 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "My Api",
-        Version = "v1",
-        Description = "An Api for Uba Mobile app clone",
-        Contact = new OpenApiContact
-        {
-            Name = "Osita Chris",
-            Email = "chrisjerry070@gmail.com",
-            Url = new Uri("https://example.com/terms")
-        }
+        Version = "v1"
     });
 });
+
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer("Data Source=DESKTOP-DRLUK05\\SQLEXPRESS;Initial Catalog=UbaCloneDb;Integrated Security=True;Trust Server Certificate=True");
 });
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -75,6 +71,8 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+Console.WriteLine($"Current Environment: {app.Environment.EnvironmentName}");
+
 // Enable Swagger as the default page
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
@@ -87,9 +85,21 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 
+
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins"); ;
 app.UseAuthentication();  // Use authentication middleware
 app.UseAuthorization();   // Use authorization middleware
 app.MapControllers();
 app.Run();
+
+
+//  "AzureAd": {
+//     "Instance": "https://login.microsoftonline.com/",
+//     "Domain": "ositaristgmail.onmicrosoft.com",
+//     "TenantId": "edd4c6ec-8599-4d1a-b149-6aa4d4b120f1",
+//     "ClientId": "72f07754-1bdd-4ecf-9796-9dc6a81b7139",
+//     "CallbackPath": "/signin-oidc",
+//     "Scopes": ""
+//   }

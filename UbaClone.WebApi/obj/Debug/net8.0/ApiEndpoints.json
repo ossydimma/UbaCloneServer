@@ -367,6 +367,22 @@
   },
   {
     "ContainingType": "UbaClone.WebApi.Controllers.UbaCloneController",
+    "Method": "GetTransactionHistory",
+    "RelativePath": "api/UbaClone/Transaction-history",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contact",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "UbaClone.WebApi.Controllers.UbaCloneController",
     "Method": "TransferMoney",
     "RelativePath": "api/UbaClone/Transfer-Money",
     "HttpMethod": "POST",
@@ -454,6 +470,7 @@
         ],
         "StatusCode": 200
       }
-    ]
+    ],
+    "EndpointName": "GetWeatherForecast"
   }
 ]

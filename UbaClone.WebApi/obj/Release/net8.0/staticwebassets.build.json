@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "RyfseJTEC5aD+J3pQgGPjCOGDdc2C7Uh/O11JvvW02M=",
+  "Hash": "ZSUSO5w+pUJI6yiFRcs7eE6SymYxViQji6GKlhavTKs=",
   "Source": "UbaClone.WebApi",
   "BasePath": "_content/UbaClone.WebApi",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }
