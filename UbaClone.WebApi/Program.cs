@@ -50,13 +50,28 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer("Data Source=DESKTOP-DRLUK05\\SQLEXPRESS;Initial Catalog=UbaCloneDb;Integrated Security=True;Trust Server Certificate=True");
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? Environment.GetEnvironmentVariable("DefaultConnection");
+    options.UseSqlServer(connectionString);
 });
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    var redisConnection = builder.Configuration.GetConnectionString("RedisConnection")
+        ?? Environment.GetEnvironmentVariable("RedisConnection");
+    options.Configuration = redisConnection;
     options.InstanceName = "SampleDb";
 });
+
+// builder.Services.AddDbContext<DataContext>(options =>
+// {
+//     options.UseSqlServer("Data Source=DESKTOP-DRLUK05\\SQLEXPRESS;Initial Catalog=UbaCloneDb;Integrated Security=True;Trust Server Certificate=True");
+// });
+// builder.Services.AddStackExchangeRedisCache(options =>
+// {
+//     options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+//     options.InstanceName = "SampleDb";
+// });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", policyBuilder =>
