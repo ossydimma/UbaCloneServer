@@ -74,13 +74,15 @@ builder.Services.AddStackExchangeRedisCache(options =>
 // });
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", policyBuilder =>
+    options.AddPolicy("AllowFrontend", policyBuilder =>
     {
-        policyBuilder.AllowAnyOrigin()
+        policyBuilder.WithOrigins("http://localhost:3000", "https://uba-mobile-app.vercel.app") 
+            .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowCredentials(); // Important for cookies, tokens, etc.
     });
 });
+
 
 builder.Services.AddAuthorization();
 
@@ -103,7 +105,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAllOrigins"); ;
+app.UseCors("AllowFrontend");
 app.UseAuthentication();  // Use authentication middleware
 app.UseAuthorization();   // Use authorization middleware
 app.MapControllers();

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UbaClone.WebApi", "UbaClone.WebApi\UbaClone.WebApi.csproj", "{9FA96485-A88F-476F-BC15-F562C0BAA04C}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{831B29F0-985A-4B08-BD11-5D414F9E7E4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{9FA96485-A88F-476F-BC15-F562C0BAA04C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FA96485-A88F-476F-BC15-F562C0BAA04C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FA96485-A88F-476F-BC15-F562C0BAA04C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{831B29F0-985A-4B08-BD11-5D414F9E7E4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{831B29F0-985A-4B08-BD11-5D414F9E7E4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{831B29F0-985A-4B08-BD11-5D414F9E7E4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{831B29F0-985A-4B08-BD11-5D414F9E7E4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
