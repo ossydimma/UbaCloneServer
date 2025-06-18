@@ -104,11 +104,14 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 
 
-app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+app.UseHttpsRedirection();
 app.UseAuthentication();  // Use authentication middleware
 app.UseAuthorization();   // Use authorization middleware
 app.MapControllers();
+
+app.MapGet("/test-cors", () => Results.Ok("CORS works"))
+   .RequireCors("AllowFrontend");
 app.Run();
 
 
