@@ -72,16 +72,28 @@ builder.Services.AddStackExchangeRedisCache(options =>
 //     options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
 //     options.InstanceName = "SampleDb";
 // });
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowFrontend", policyBuilder =>
+//     {
+//         policyBuilder.WithOrigins("http://localhost:3000", "https://uba-mobile-app.vercel.app") 
+//             .AllowAnyHeader()
+//             .AllowAnyMethod()
+//             .AllowCredentials(); 
+//     });
+// });
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policyBuilder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policyBuilder.WithOrigins("http://localhost:3000", "https://uba-mobile-app.vercel.app") 
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); // Important for cookies, tokens, etc.
+        policy
+            .AllowAnyOrigin()      // 👈 Allows ANY origin
+            .AllowAnyMethod()      // GET, POST, PUT, etc.
+            .AllowAnyHeader();     // Accepts all headers
     });
 });
+
 
 
 builder.Services.AddAuthorization();
@@ -104,7 +116,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 
 
-app.UseCors("AllowFrontend");
+// app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthentication();  // Use authentication middleware
 app.UseAuthorization();   // Use authorization middleware
