@@ -23,6 +23,7 @@ namespace UbaClone.WebApi
         public virtual Models.UbaClone UbaCloneUser { get; set; } = null!;
 
         [Timestamp]
-        public byte[] RowVersion { get; set; } = null!;
+        public byte[]? RowVersion { get; set; }
+
     }
 }
