@@ -117,8 +117,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 
 // app.UseCors("AllowFrontend");
-app.UseCors("AllowAll");
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseAuthentication();  // Use authentication middleware
 app.UseAuthorization();   // Use authorization middleware
 app.MapControllers();
