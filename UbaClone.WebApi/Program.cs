@@ -67,27 +67,26 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowFrontend", policyBuilder =>
-//     {
-//         policyBuilder.WithOrigins("http://localhost:3000", "https://uba-mobile-app.vercel.app") 
-//             .AllowAnyHeader()
-//             .AllowAnyMethod()
-//             .AllowCredentials(); 
-//     });
-// });
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policyBuilder =>
     {
-        policy
-            .AllowAnyOrigin()      // 👈 Allows ANY origin
-            .AllowAnyMethod()      // GET, POST, PUT, etc.
-            .AllowAnyHeader();     // Accepts all headers
+        policyBuilder.WithOrigins("https://uba-mobile-app.vercel.app") 
+            .AllowAnyHeader()
+            .AllowAnyMethod(); 
     });
 });
+
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowAll", policy =>
+//     {
+//         policy
+//             .AllowAnyOrigin()      // 👈 Allows ANY origin
+//             .AllowAnyMethod()      // GET, POST, PUT, etc.
+//             .AllowAnyHeader();     // Accepts all headers
+//     });
+// });
 
 
 
@@ -109,9 +108,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 
-// app.UseCors("AllowFrontend");
+app.UseCors("AllowFrontend");
 // app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+// app.UseCors("AllowAll");
 app.UseAuthentication();  // Use authentication middleware
 app.UseAuthorization();   // Use authorization middleware
 app.MapControllers();
