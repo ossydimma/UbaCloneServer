@@ -48,11 +48,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+
+var conn = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("DefaultConnection");
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? Environment.GetEnvironmentVariable("DefaultConnection");
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(conn);
+
 });
 
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -63,15 +66,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "SampleDb";
 });
 
-// builder.Services.AddDbContext<DataContext>(options =>
-// {
-//     options.UseSqlServer("Data Source=DESKTOP-DRLUK05\\SQLEXPRESS;Initial Catalog=UbaCloneDb;Integrated Security=True;Trust Server Certificate=True");
-// });
-// builder.Services.AddStackExchangeRedisCache(options =>
-// {
-//     options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-//     options.InstanceName = "SampleDb";
-// });
+
 // builder.Services.AddCors(options =>
 // {
 //     options.AddPolicy("AllowFrontend", policyBuilder =>
@@ -114,8 +109,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 
-
-
 // app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
@@ -126,13 +119,3 @@ app.MapControllers();
 app.MapGet("/test-cors", () => Results.Ok("CORS works"))
    .RequireCors("AllowFrontend");
 app.Run();
-
-
-//  "AzureAd": {
-//     "Instance": "https://login.microsoftonline.com/",
-//     "Domain": "ositaristgmail.onmicrosoft.com",
-//     "TenantId": "edd4c6ec-8599-4d1a-b149-6aa4d4b120f1",
-//     "ClientId": "72f07754-1bdd-4ecf-9796-9dc6a81b7139",
-//     "CallbackPath": "/signin-oidc",
-//     "Scopes": ""
-//   }
