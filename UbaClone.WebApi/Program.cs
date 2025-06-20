@@ -71,7 +71,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policyBuilder =>
     {
-        policyBuilder.WithOrigins("https://uba-mobile-app.vercel.app") 
+        policyBuilder.WithOrigins("https://uba-mobile-app.onrender.com") 
             .AllowAnyHeader()
             .AllowAnyMethod(); 
     });
