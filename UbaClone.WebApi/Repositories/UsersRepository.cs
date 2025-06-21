@@ -21,22 +21,48 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
     public async Task<Models.UbaClone?> GetUserByContactAsync(string contact)
     {
+        Models.UbaClone? user = null;
         string key = $"UBACLONE-user:{contact}";
 
-        string? fromCache = await _distributedCache.GetStringAsync(key);
+        try
+        {
 
-        if (!string.IsNullOrEmpty(fromCache))
-            return JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
+            string? fromCache = await _distributedCache.GetStringAsync(key);
 
-        Models.UbaClone? fromDb = await _db.Users
+            if (!string.IsNullOrEmpty(fromCache))
+            {
+                user = JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
+                if (user != null)
+                {
+                    Console.WriteLine("Fetched user from Redis cache");
+                    return user;
+                }
+            }
+                
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Redis unavailable: " + ex.Message);
+        }
+        
+
+        user = await _db.Users
             .Include(u => u.TransactionHistory)
             .FirstOrDefaultAsync(u => u.Contact == contact);
 
-        if (fromDb == null) return fromDb;
+        if (user == null) return user;
 
-        await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(fromDb), _cacheEntryOptions);
+        try
+        {
+            await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(user), _cacheEntryOptions);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+        }
 
-        return fromDb;
+
+        return user;
     }
 
     public bool VerifyPasswordAsync(Models.UbaClone user, string password)
@@ -74,7 +100,16 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
             if (affect == 1)
             {
-                await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                try
+                {
+                    await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+                    
+                }
+                
             }
             else
             {
@@ -102,7 +137,15 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
             if (affected == 1)
             {
-                await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                try
+                {
+                    await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+                    
+                }
             }
             else
             {
@@ -133,18 +176,41 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
     public async Task<Models.UbaClone?> RetrieveAsync(Guid id)
     {
         string key = $"UBACLONE-user:{id}";
-        string? fromCache = await _distributedCache.GetStringAsync(key);
+        Models.UbaClone? user = null;
+        try
+        {
+            string? fromCache = await _distributedCache.GetStringAsync(key);
 
-        if (!string.IsNullOrEmpty(fromCache))
-            return JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
+            if (!string.IsNullOrEmpty(fromCache))
+            {
+                user = JsonConvert.DeserializeObject<Models.UbaClone>(fromCache);
+                if (user != null)
+                {
+                    return user;
+                }
+            }
 
-        Models.UbaClone? fromDb = await _db.Users.FirstOrDefaultAsync(u => u.UserId == id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Redis unavailable: " + ex.Message);
+        }
+        
 
-        if (fromDb == null) return fromDb;
+        user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == id);
 
-        await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(fromDb), _cacheEntryOptions);
+        if (user == null) return user;
 
-        return fromDb;
+        try
+        {
+            await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(user), _cacheEntryOptions);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+        }
+
+        return user;
     }
 
     public async Task<Models.UbaClone?> CreateUserAsync(Models.UbaClone user)
@@ -156,7 +222,16 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
         if (affect == 1)
         {
-           await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(user), _cacheEntryOptions);
+            try
+            {
+                await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(user), _cacheEntryOptions);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+            }
+
            return user;
         }
 
@@ -172,8 +247,17 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
         if (affect == 1)
         {
-            await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(user), _cacheEntryOptions);
-            return user;
+            try
+            {
+                await _distributedCache.SetStringAsync(key, JsonConvert.SerializeObject(user), _cacheEntryOptions);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+            }
+            
+           return user;
         }
         return null;
     }
@@ -191,7 +275,16 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
         int affected = await _db.SaveChangesAsync();
 
         if (affected > 0)
-            await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+        {
+            try
+            {
+                await _distributedCache.SetStringAsync($"UBACLONE-user:{user.Contact}", JsonConvert.SerializeObject(user), _cacheEntryOptions);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+            }
+        }
 
     }
 
@@ -230,7 +323,14 @@ public class UsersRepository(IDistributedCache distributedCache, DataContext db)
 
         if (affect == 1)
         {
-            _distributedCache.Remove(key);
+            try
+            {
+                _distributedCache.Remove(key);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to cache user in Redis: " + ex.Message);
+            }
             return true;
         }
         return null;
