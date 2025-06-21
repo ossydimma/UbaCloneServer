@@ -62,8 +62,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     var redisConnection = builder.Configuration.GetConnectionString("RedisConnection")
         ?? Environment.GetEnvironmentVariable("RedisConnection");
-    options.Configuration = redisConnection;
-    options.InstanceName = "SampleDb";
+    options.InstanceName = "my-applications";
 });
 
 
@@ -76,18 +75,6 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod(); 
     });
 });
-
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowAll", policy =>
-//     {
-//         policy
-//             .AllowAnyOrigin()      // 👈 Allows ANY origin
-//             .AllowAnyMethod()      // GET, POST, PUT, etc.
-//             .AllowAnyHeader();     // Accepts all headers
-//     });
-// });
-
 
 
 builder.Services.AddAuthorization();
@@ -109,14 +96,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     });
 }
 
-
-// app.UseHttpsRedirection();
-// app.UseCors("AllowAll");
-app.UseAuthentication();  // Use authentication middleware
-app.UseAuthorization();   // Use authorization middleware
+app.UseAuthentication();  
+app.UseAuthorization();  
 app.MapControllers();
 
-app.MapGet("/test-cors", () => Results.Ok("CORS works"))
-   .RequireCors("AllowReactApp");
 
 app.Run();
