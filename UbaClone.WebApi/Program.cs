@@ -69,9 +69,9 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policyBuilder =>
+    options.AddPolicy("AllowReactApp", policyBuilder =>
     {
-        policyBuilder.WithOrigins("https://uba-mobile-app.onrender.com") 
+        policyBuilder.WithOrigins("http://localhost:3000", "https://uba-mobile-app.vercel.app", "https://uba-mobile-app.onrender.com") 
             .AllowAnyHeader()
             .AllowAnyMethod(); 
     });
@@ -96,6 +96,8 @@ var app = builder.Build();
 
 Console.WriteLine($"Current Environment: {app.Environment.EnvironmentName}");
 
+app.UseCors("AllowReactApp");
+
 // Enable Swagger as the default page
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
@@ -108,7 +110,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 
-app.UseCors("AllowFrontend");
 // app.UseHttpsRedirection();
 // app.UseCors("AllowAll");
 app.UseAuthentication();  // Use authentication middleware
@@ -116,5 +117,6 @@ app.UseAuthorization();   // Use authorization middleware
 app.MapControllers();
 
 app.MapGet("/test-cors", () => Results.Ok("CORS works"))
-   .RequireCors("AllowFrontend");
+   .RequireCors("AllowReactApp");
+
 app.Run();
